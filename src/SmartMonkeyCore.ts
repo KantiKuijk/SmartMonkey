@@ -72,10 +72,10 @@ export function registerPlugin(plugin: SMPluginPreRegister) {
     } satisfies SMState["plugins"][SMPluginID];
     localStorage.setItem(SMSTORAGEKEY, JSON.stringify(SMState));
   }
-  if (plugin.init) plugin.init();
+  if (plugin.init) return plugin.init();
 }
 
-export function main() {
+export async function main() {
   const SMState = getSMState();
   for (const pluginID in SMState.plugins) {
     const pluginStatus = SMState.plugins[pluginID];
@@ -83,6 +83,6 @@ export function main() {
     if (!pluginStatus.inUse) continue;
     const plugin = REGISTERED_PLUGINS[pluginID];
     if (!plugin) continue;
-    plugin.activate();
+    await plugin.activate();
   }
 }
