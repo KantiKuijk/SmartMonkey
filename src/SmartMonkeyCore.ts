@@ -68,7 +68,7 @@ export function registerPlugin(plugin: SMPluginPreRegister) {
   const SMState = getSMState();
   if (!SMState.plugins[plugin.id]) {
     SMState.plugins[plugin.id] = {
-      inUse: false,
+      inUse: true,
     } satisfies SMState["plugins"][SMPluginID];
     localStorage.setItem(SMSTORAGEKEY, JSON.stringify(SMState));
   }
