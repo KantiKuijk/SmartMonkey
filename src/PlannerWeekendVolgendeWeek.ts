@@ -10,7 +10,9 @@ registerPlugin({
     author: "Kanti Kuijk",
   },
   activate: async () => {
-    const href = window.location.href;
+    const href =
+      window.performance.getEntriesByType("navigation")[0]?.name ??
+      window.location.href;
     const date = new Date();
     const day = date.getDay();
     if (
