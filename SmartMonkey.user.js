@@ -11,8 +11,9 @@
 // ==/UserScript==
 GM_xmlhttpRequest({
   method: "GET",
-  url: "https://raw.githubusercontent.com/KantiKuijk/SmartMonkey/refs/heads/main/dist/SmartMonkey.js",
-  onload: function (response) {
+  // ts param is for TamperMonkey cache busting
+  url: `https://raw.githubusercontent.com/KantiKuijk/SmartMonkey/refs/heads/main/dist/SmartMonkey.js?ts=${Date.now()}`,
+  onload: (response) => {
     eval(response.responseText);
   },
 });

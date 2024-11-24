@@ -77,6 +77,7 @@ export function registerPlugin(plugin: SMPluginPreRegister) {
 
 export async function main() {
   const SMState = getSMState();
+  const activatedPluginNames = [];
   for (const pluginID in SMState.plugins) {
     const pluginStatus = SMState.plugins[pluginID];
     if (!pluginStatus) continue;
@@ -84,5 +85,9 @@ export async function main() {
     const plugin = REGISTERED_PLUGINS[pluginID];
     if (!plugin) continue;
     await plugin.activate();
+    activatedPluginNames.push(plugin.info.name);
   }
+  console.info(
+    `SmartMonkey activated plugins: ${activatedPluginNames.join(", ")}`
+  );
 }
