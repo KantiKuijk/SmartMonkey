@@ -5,7 +5,8 @@
   "main": "SmartMonkey.js",
   "type": "module",
   "scripts": {
-    "build": "esbuild src/SmartMonkey.ts --bundle --outfile=dist/SmartMonkey.js --format=iife --global-name=SmartMonkey --minify"
+    "build": "esbuild src/SmartMonkey.ts --bundle --outfile=dist/SmartMonkey.js --format=iife --global-name=SmartMonkey --minify",
+    "dev": "esbuild src/SmartMonkey.ts --bundle --outfile=dist/SmartMonkey.js --format=iife --global-name=SmartMonkey --watch"
   },
   "keywords": [],
   "author": "",

@@ -22,7 +22,7 @@ registerPlugin({
         nextWeek.getFullYear(),
         nextWeek.getMonth() + 1,
         nextWeek.getDate(),
-      ];
+      ].map((n) => n.toString().padStart(2, "0"));
       const newHref = `${href}/main/user/${
         (await getUserIDs()).idString
       }/${year}-${month}-${day}`;
