@@ -1,13 +1,29 @@
 import { z } from "zod";
 
-type SMPluginID = string;
+const SMStateZod = z.object({
+  plugins: z.record(
+    z
+      .object({
+        inUse: z.boolean(),
+        id: z.string().min(6),
+        info: z
+          .object({
+            name: z.string().min(6),
+            description: z.string().min(16),
+            version: z.string().min(2),
+            author: z.string().min(3),
+          })
+          .strict(),
+      })
+      .strict()
+  ),
+});
+type SMState = z.infer<typeof SMStateZod>;
+export const SMSTORAGEKEY = "smartmonkey";
 
-type SMPluginInfo = {
-  name: string;
-  description: string;
-  version: string;
-  author: string;
-};
+type SMPluginInfo = SMState["plugins"][string]["info"];
+
+type SMPluginID = string;
 
 export type SMPlugin = {
   id: SMPluginID;
@@ -18,19 +34,7 @@ export type SMPlugin = {
   deactivate?: () => void;
 };
 
-const SMStateZod = z.object({
-  plugins: z.record(
-    z
-      .object({
-        inUse: z.boolean(),
-      })
-      .strict()
-  ),
-});
-type SMState = z.infer<typeof SMStateZod>;
-const SMSTORAGEKEY = "smartmonkey";
-
-function getSMState(secondTry = false): SMState {
+export function getSMState(secondTry = false): SMState {
   try {
     const SMSfromStorage = localStorage.getItem(SMSTORAGEKEY);
     if (!SMSfromStorage) {
@@ -61,15 +65,29 @@ function getSMState(secondTry = false): SMState {
   }
 }
 
+function stringifyPluginOptions(info: SMPlugin["info"]) {
+  // @ts-expect-error b - a is kind of dirty but well known to work for sorting
+  const entries = Object.entries(info).sort(([a, _], [b, __]) => b - a);
+  return JSON.stringify(entries);
+}
 type SMPluginPreRegister = Omit<SMPlugin, "inUse">;
 const REGISTERED_PLUGINS: Record<string, SMPluginPreRegister> = {};
 export function registerPlugin(plugin: SMPluginPreRegister) {
   REGISTERED_PLUGINS[plugin.id] = plugin;
   const SMState = getSMState();
-  if (!SMState.plugins[plugin.id]) {
+  const storedPlugin = SMState.plugins[plugin.id];
+  if (!storedPlugin) {
     SMState.plugins[plugin.id] = {
       inUse: true,
+      id: plugin.id,
+      info: plugin.info,
     } satisfies SMState["plugins"][SMPluginID];
+    localStorage.setItem(SMSTORAGEKEY, JSON.stringify(SMState));
+  } else if (
+    stringifyPluginOptions(storedPlugin.info) !==
+    stringifyPluginOptions(plugin.info)
+  ) {
+    storedPlugin.info = plugin.info;
     localStorage.setItem(SMSTORAGEKEY, JSON.stringify(SMState));
   }
   if (plugin.init) return plugin.init();

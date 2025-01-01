@@ -3,8 +3,8 @@ import { registerPlugin } from "./SmartMonkeyCore.js";
 registerPlugin({
   id: "planner-in-topnav",
   info: {
-    name: "Planner ipv Vakken in topnav",
-    description: "Vervangt de knop voor 'Vakken' met 'Planner'",
+    name: "Planner: Knop in bovenbalk",
+    description: "Vervangt in de bovenbalk de knop 'Vakken' met 'Planner'",
     version: "v0.1",
     author: "Kanti Kuijk",
   },

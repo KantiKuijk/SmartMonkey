@@ -4,8 +4,9 @@ import { getUserIDs } from "./SmartMonkeyHelpers.js";
 registerPlugin({
   id: "planner-weekend-volgende-week",
   info: {
-    name: "Planner Weekend Volgende Week",
-    description: "Ga in de planner tijdens het weekend al naar de komende week",
+    name: "Planner: Toon komende week",
+    description:
+      "Zorgt dat tijdens het weekend de planner standaard gaat naar de week die komt i.p.v. de afgelopen week.",
     version: "v0.1",
     author: "Kanti Kuijk",
   },
