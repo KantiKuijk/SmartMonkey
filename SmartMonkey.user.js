@@ -16,4 +16,8 @@ GM_xmlhttpRequest({
   onload: (response) => {
     eval(response.responseText);
   },
+  timeout: 30_000,
+  ontimeout: () => {
+    console.error("Couldn't load SmartMonkey: timeout.");
+  },
 });
