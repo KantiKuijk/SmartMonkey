@@ -29,9 +29,7 @@ export type SMPlugin = {
   id: SMPluginID;
   info: SMPluginInfo;
   inUse: boolean;
-  init?: () => void;
   activate: () => void;
-  deactivate?: () => void;
 };
 
 export function getSMState(secondTry = false): SMState {
@@ -90,7 +88,6 @@ export function registerPlugin(plugin: SMPluginPreRegister) {
     storedPlugin.info = plugin.info;
     localStorage.setItem(SMSTORAGEKEY, JSON.stringify(SMState));
   }
-  if (plugin.init) return plugin.init();
 }
 
 export async function main() {
