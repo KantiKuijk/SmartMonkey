@@ -1,108 +1,45 @@
-import { z } from "zod";
+import { SMState } from "./PluginClasses.js";
 
-const SMStateZod = z.object({
-  plugins: z.record(
-    z
-      .object({
-        inUse: z.boolean(),
-        id: z.string().min(6),
-        info: z
-          .object({
-            name: z.string().min(6),
-            description: z.string().min(16),
-            version: z.string().min(2),
-            author: z.string().min(3),
-          })
-          .strict(),
-      })
-      .strict()
-  ),
-});
-type SMState = z.infer<typeof SMStateZod>;
-export const SMSTORAGEKEY = "smartmonkey";
-
-type SMPluginInfo = SMState["plugins"][string]["info"];
-
-type SMPluginID = string;
-
-export type SMPlugin = {
-  id: SMPluginID;
-  info: SMPluginInfo;
-  inUse: boolean;
-  activate: () => void;
+export type SMPluginInfo = {
+  name: string;
+  description: string;
+  author: string;
 };
 
-export function getSMState(secondTry = false): SMState {
-  try {
-    const SMSfromStorage = localStorage.getItem(SMSTORAGEKEY);
-    if (!SMSfromStorage) {
-      const SMState = {
-        plugins: {},
-      } satisfies SMState;
-      localStorage.setItem(SMSTORAGEKEY, JSON.stringify(SMState));
-      return SMState;
-    } else {
-      const SMState = JSON.parse(SMSfromStorage);
-      return SMStateZod.parse(SMState);
-    }
-  } catch (e) {
-    if (secondTry) {
-      console.error(e);
-      window.alert("SmartMonkey is gestorven aan het nootje.");
-      return {
-        plugins: {},
-      } satisfies SMState;
-    } else {
-      console.error(e);
-      window.alert(
-        "SmartMonkey heeft een fout nootje gegeten en zal zichzelf resetten."
-      );
-      localStorage.removeItem(SMSTORAGEKEY);
-      return getSMState(true);
-    }
-  }
+export const VERSION = "v0.2";
+
+// @ts-expect-error object gets populated when every plugin registers itself
+// it is up to the plugin to make sure it is both registered and namespaced
+export const MAINPLUGINS: {
+  [pluginId in SmartMonkey.PluginId]: SmartMonkey.MainPlugins[pluginId];
+} = {};
+export const PLUGINIDS: SmartMonkey.PluginId[] = [];
+// @ts-expect-error object gets populated during main()
+export const USERPLUGINS: SmartMonkey.UserPlugins = {};
+
+export function registerPlugin(plugin: SmartMonkey.MainPlugin) {
+  // @ts-expect-error ts can't couple the id to the plugin on a type-level
+  MAINPLUGINS[plugin.id] = plugin;
+  PLUGINIDS.push(plugin.id);
 }
 
-function stringifyPluginOptions(info: SMPlugin["info"]) {
-  // @ts-expect-error b - a is kind of dirty but well known to work for sorting
-  const entries = Object.entries(info).sort(([a, _], [b, __]) => b - a);
-  return JSON.stringify(entries);
-}
-type SMPluginPreRegister = Omit<SMPlugin, "inUse">;
-const REGISTERED_PLUGINS: Record<string, SMPluginPreRegister> = {};
-export function registerPlugin(plugin: SMPluginPreRegister) {
-  REGISTERED_PLUGINS[plugin.id] = plugin;
-  const SMState = getSMState();
-  const storedPlugin = SMState.plugins[plugin.id];
-  if (!storedPlugin) {
-    SMState.plugins[plugin.id] = {
-      inUse: true,
-      id: plugin.id,
-      info: plugin.info,
-    } satisfies SMState["plugins"][SMPluginID];
-    localStorage.setItem(SMSTORAGEKEY, JSON.stringify(SMState));
-  } else if (
-    stringifyPluginOptions(storedPlugin.info) !==
-    stringifyPluginOptions(plugin.info)
-  ) {
-    storedPlugin.info = plugin.info;
-    localStorage.setItem(SMSTORAGEKEY, JSON.stringify(SMState));
-  }
+function isPluginId(id: string): id is SmartMonkey.PluginId {
+  // the irony of the as statement isn't lost on me
+  return PLUGINIDS.includes(id as SmartMonkey.PluginId);
 }
 
 export async function main() {
-  const SMState = getSMState();
-  const activatedPluginNames = [];
-  for (const pluginID in SMState.plugins) {
-    const pluginStatus = SMState.plugins[pluginID];
-    if (!pluginStatus) continue;
-    if (!pluginStatus.inUse) continue;
-    const plugin = REGISTERED_PLUGINS[pluginID];
-    if (!plugin) continue;
-    await plugin.activate();
-    activatedPluginNames.push(plugin.info.name);
-  }
+  SMState.init();
+  const activatedPluginNames = PLUGINIDS.map((pluginId) => {
+    if (!isPluginId(pluginId)) return;
+    const pluginMain = MAINPLUGINS[pluginId];
+    if (!pluginMain) throw new Error(`Plugin ${pluginId} is not registered.`);
+    const pluginUser = pluginMain.spawn();
+    // @ts-expect-error ts can't couple the id to the plugin on a type-level
+    USERPLUGINS[pluginId] = pluginUser;
+    return pluginMain.info.name;
+  }).filter((e) => e);
   console.info(
-    `SmartMonkey activated plugins: ${activatedPluginNames.join(", ")}`
+    `SmartMonkey activating plugins: ${activatedPluginNames.join(", ")}`
   );
 }

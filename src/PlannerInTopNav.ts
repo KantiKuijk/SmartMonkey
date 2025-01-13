@@ -1,11 +1,22 @@
+import { PluginMain } from "./PluginClasses.js";
 import { registerPlugin } from "./SmartMonkeyCore.js";
 
-registerPlugin({
-  id: "planner-in-topnav",
+declare global {
+  namespace SmartMonkey {
+    interface MainPlugins {
+      [id]: typeof plugin;
+    }
+  }
+}
+
+const id = "planner-in-topnav" as const;
+const plugin = new PluginMain<typeof id>({
+  id,
+  version: "v0.1",
+  inUseDefault: true,
   info: {
     name: "Planner: Knop in bovenbalk",
     description: "Vervangt in de bovenbalk de knop 'Vakken' met 'Planner'",
-    version: "v0.1",
     author: "Kanti Kuijk",
   },
   activate: () => {
@@ -23,3 +34,5 @@ registerPlugin({
     else vakkenButton.outerHTML = plannerLinkHTML;
   },
 });
+
+registerPlugin(plugin);

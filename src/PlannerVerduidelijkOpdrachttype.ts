@@ -1,12 +1,23 @@
+import { PluginMain } from "./PluginClasses.js";
 import { registerPlugin } from "./SmartMonkeyCore.js";
 
-registerPlugin({
-  id: "planner-duidelijk-opdrachttype",
+declare global {
+  namespace SmartMonkey {
+    interface MainPlugins {
+      [id]: typeof plugin;
+    }
+  }
+}
+
+const id = "planner-duidelijk-opdrachttype" as const;
+const plugin = new PluginMain<typeof id>({
+  id,
+  version: "v0.1",
+  inUseDefault: true,
   info: {
     name: "Planner: Duidelijk opdrachttype",
     description:
       "Toont het opdrachttype duidelijker wanneer je start vanaf een lege opdracht.",
-    version: "v0.1",
     author: "Kanti Kuijk",
   },
   activate: () => {
@@ -19,3 +30,5 @@ registerPlugin({
     document.head.appendChild(style);
   },
 });
+
+registerPlugin(plugin);

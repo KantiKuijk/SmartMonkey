@@ -1,14 +1,30 @@
 import { emmet } from "./emmet.js";
-import { getSMState, registerPlugin, SMSTORAGEKEY } from "./SmartMonkeyCore.js";
+import { PluginMain, SMState } from "./PluginClasses.js";
+import {
+  MAINPLUGINS,
+  PLUGINIDS,
+  registerPlugin,
+  USERPLUGINS,
+} from "./SmartMonkeyCore.js";
+
+declare global {
+  namespace SmartMonkey {
+    interface MainPlugins {
+      [id]: typeof plugin;
+    }
+  }
+}
 
 const ALWAYSENABLEDPLUGINS = ["settings"];
 
-registerPlugin({
-  id: "settings",
+const id = "settings" as const;
+const plugin = new PluginMain<typeof id>({
+  id,
+  version: "v0.2",
+  inUseDefault: true,
   info: {
     name: "Settings",
     description: "Voegt SmartMonkey toe bij de settings",
-    version: "v0.1",
     author: "Kanti Kuijk",
   },
   activate: () => {
@@ -16,7 +32,6 @@ registerPlugin({
       window.performance.getEntriesByType("navigation")[0]?.name ??
       window.location.href;
     if (/^https:\/\/[a-zA-Z]+\.smartschool\.be\/\?module=Profile$/.test(href)) {
-      console.log("settings reachedd");
       // debugger;
       // if child doesn't exist either, it will exit just as well on the next line
       const smscSettings =
@@ -53,7 +68,6 @@ registerPlugin({
         aTag.href = "";
         aTag.onclick = (e) => {
           e.preventDefault();
-          console.log("I've been clicked");
           const style = document.createElement("style");
           style.textContent = `
             #smk-settings {
@@ -94,32 +108,51 @@ registerPlugin({
               opacity: 1;
               transition: opacity 0.25s;
             }
+            #smk-settings .smkButtonSmall {
+              display: inline-block;
+              border: .5px solid #868686;
+              background: #fcfcfc;
+              border-radius: 4px;
+              margin: 0 0.25em;
+              vertical-align: top;
+              text-align: center;
+              line-height: 1em;
+            }
+            #smk-settings .smkButtonSmall:hover {
+              background: white;
+              color: #868686;
+            }
+            #smk-settings .smkButtonSmall:active {
+              border: .5px solid #ececec;
+            }
+            #smk-settings .smkButtonSmall:disabled {
+              border: .5px solid #ececec;
+              color: #ececec;
+              background: unset;
+            }
           `;
           document.head.appendChild(style);
-          const smsState = getSMState();
           const resetSettingsBtn = emmet<"button">`
           button.smscButton.red#smk-settings-reset
             {Reset}
           `;
           resetSettingsBtn.addEventListener("click", () => {
             // reload the page to reset the settings
-            localStorage.removeItem(SMSTORAGEKEY);
+            SMState.reset();
             window.location.reload();
           });
-          const annuleerSettingsBtn = emmet<"button">`
-          button.smscButton
-            {Annuleer}
-          `;
-          annuleerSettingsBtn.addEventListener("click", () => {
-            // reload the page to reset the settings
-            window.location.reload();
-          });
+          // const annuleerSettingsBtn = emmet<"button">`
+          // button.smscButton
+          //   {Annuleer}
+          // `;
+          // annuleerSettingsBtn.addEventListener("click", () => {
+          //   // reload the page to reset the settings
+          //   window.location.reload();
+          // });
           const saveSettingsBtn = emmet<"button">`
-          button.smscButton.blue[disabled]
-            {Opslaan}
+          button.smscButton.blue{Sluiten}
           `;
           saveSettingsBtn.addEventListener("click", () => {
-            localStorage.setItem(SMSTORAGEKEY, JSON.stringify(smsState));
             window.location.reload();
           });
           const settingsDialog = emmet<"dialog">`
@@ -129,33 +162,44 @@ registerPlugin({
             +h4{Welke plugins wil je gebruiken?}
             +${(() => {
               const fragment = document.createDocumentFragment();
-              Object.values(smsState.plugins)
-                .filter((plugin) => !ALWAYSENABLEDPLUGINS.includes(plugin.id))
-                .forEach((plugin) => {
-                  const cbDiv = emmet<"div">`
-                div.smscCheckbox
-                  >input[type=checkbox]#smk-plugin-enable-${plugin.id}${
-                    plugin.inUse ? "[checked]" : ""
-                  }
-                  +label{${plugin.info.name}}[for=smk-plugin-enable-${
-                    plugin.id
-                  }].hasTooltip
-                    >span.tooltip{${plugin.info.description}}
-                    +span.after{?}
-                )`;
-                  cbDiv
-                    .querySelector("input")
-                    ?.addEventListener("change", () => {
-                      saveSettingsBtn.disabled = false;
-                      plugin.inUse = !plugin.inUse;
+              PLUGINIDS.filter(
+                (pid) => !ALWAYSENABLEDPLUGINS.includes(pid)
+              ).forEach((pid) => {
+                const main = MAINPLUGINS[pid];
+                const user = USERPLUGINS[pid];
+                const inputId = `smk-plugin-enable-${pid}`;
+                let plugSettingsBtn = emmet<"button">`
+                button{…}.smkButtonSmall
+                `;
+                const { changeSettings } = main;
+                if (changeSettings) {
+                  plugSettingsBtn.addEventListener("click", async () => {
+                    const newPlugSettings = await changeSettings();
+                    SMState.changePluginState(pid, {
+                      settings: newPlugSettings,
                     });
-                  fragment.appendChild(cbDiv);
+                  });
+                } else plugSettingsBtn.disabled = true;
+                const cbDiv = emmet<"div">`
+                div.smscCheckbox
+                  >${plugSettingsBtn}
+                  +input[type=checkbox]#${inputId}${
+                  user.inUse ? "[checked]" : ""
+                }
+                  +(label{${main.info.name}}[for=${inputId}].hasTooltip
+                    >span.tooltip{${main.info.description}}
+                    +span.after{?}
+                  )`;
+                const inUseCB = cbDiv.querySelector("input");
+                inUseCB?.addEventListener("change", () => {
+                  SMState.changePluginState(pid, { inUse: inUseCB.checked });
                 });
+                fragment.appendChild(cbDiv);
+              });
               return fragment.querySelectorAll("div");
             })()}
             +div.smscButtonContainer[style="margin-top:1em;"]
-              >${annuleerSettingsBtn}
-              +${saveSettingsBtn}
+              >${saveSettingsBtn}
           `;
           document.body.append(settingsDialog);
 
@@ -166,3 +210,5 @@ registerPlugin({
     }
   },
 });
+
+registerPlugin(plugin);
