@@ -123,7 +123,9 @@ export class PluginMain<Id extends SmartMonkey.PluginId> {
     if (this.activated)
       throw new Error(`Plugin ${this.id} was already activated.`);
     const storedState = SMState.plugins[this.id];
-    const state = storedState ? storedState : this.stateDefault;
+    // this line makes the state more resistive against missing values in storage
+    // but won't fix those values in storage if they are missing
+    const state = { ...this.stateDefault, ...storedState };
     if (state.version !== this.version) {
       console.log(
         `SMK: Plugin ${this.id} was activated with version ${state.version}, but it is version ${this.version}.`
@@ -290,7 +292,8 @@ export class PluginUser<Id extends SmartMonkey.PluginId> {
     this.id = id;
     this.version = version;
     this._inUse = inUse;
-    this.settings = settings;
+    // extra precaution for missing settings because zod doesn't validate settings
+    this.settings = settings ?? main.settingsDefault;
     this.main = main;
   }
 
