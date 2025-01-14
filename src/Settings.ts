@@ -6,7 +6,7 @@ import {
   registerPlugin,
   USERPLUGINS,
 } from "./SmartMonkeyCore.js";
-import { addCSS } from "./utilities.js";
+import { addCSS, array2NodeList } from "./utilities.js";
 
 declare global {
   namespace SmartMonkey {
@@ -160,42 +160,42 @@ const plugin = new PluginMain<typeof id>({
             +h3{SmartMonkey Instellingen}
             +h4{Welke plugins wil je gebruiken?}
             +${(() => {
-              const fragment = document.createDocumentFragment();
-              PLUGINIDS.filter(
-                (pid) => !ALWAYSENABLEDPLUGINS.includes(pid)
-              ).forEach((pid) => {
-                const main = MAINPLUGINS[pid];
-                const user = USERPLUGINS[pid];
-                const inputId = `smk-plugin-enable-${pid}`;
-                let plugSettingsBtn = emmet<"button">`
+              return array2NodeList(
+                PLUGINIDS.filter(
+                  (pid) => !ALWAYSENABLEDPLUGINS.includes(pid)
+                ).map((pid) => {
+                  const main = MAINPLUGINS[pid];
+                  const user = USERPLUGINS[pid];
+                  const inputId = `smk-plugin-enable-${pid}`;
+                  let plugSettingsBtn = emmet<"button">`
                 button{…}.smkButtonSmall
                 `;
-                const { changeSettings } = main;
-                if (changeSettings) {
-                  plugSettingsBtn.addEventListener("click", async () => {
-                    const newPlugSettings = await changeSettings();
-                    SMState.changePluginState(pid, {
-                      settings: newPlugSettings,
+                  const { changeSettings } = main;
+                  if (changeSettings) {
+                    plugSettingsBtn.addEventListener("click", async () => {
+                      const newPlugSettings = await changeSettings();
+                      SMState.changePluginState(pid, {
+                        settings: newPlugSettings,
+                      });
                     });
-                  });
-                } else plugSettingsBtn.disabled = true;
-                const cbDiv = emmet<"div">`
+                  } else plugSettingsBtn.disabled = true;
+                  const cbDiv = emmet<"div">`
                 div.smscCheckbox
                   >${plugSettingsBtn}
                   +input[type=checkbox]#${inputId}${
-                  user.inUse ? "[checked]" : ""
-                }
+                    user.inUse ? "[checked]" : ""
+                  }
                   +(label{${main.info.name}}[for=${inputId}].hasTooltip
                     >span.tooltip{${main.info.description}}
                     +span.after{?}
                   )`;
-                const inUseCB = cbDiv.querySelector("input");
-                inUseCB?.addEventListener("change", () => {
-                  SMState.changePluginState(pid, { inUse: inUseCB.checked });
-                });
-                fragment.appendChild(cbDiv);
-              });
-              return fragment.querySelectorAll("div");
+                  const inUseCB = cbDiv.querySelector("input");
+                  inUseCB?.addEventListener("change", () => {
+                    SMState.changePluginState(pid, { inUse: inUseCB.checked });
+                  });
+                  return cbDiv;
+                })
+              );
             })()}
             +div.smscButtonContainer[style="margin-top:1em;"]
               >${saveSettingsBtn}
