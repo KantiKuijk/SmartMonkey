@@ -6,6 +6,7 @@ import {
   registerPlugin,
   USERPLUGINS,
 } from "./SmartMonkeyCore.js";
+import { addCSS } from "./utilities.js";
 
 declare global {
   namespace SmartMonkey {
@@ -68,8 +69,7 @@ const plugin = new PluginMain<typeof id>({
         aTag.href = "";
         aTag.onclick = (e) => {
           e.preventDefault();
-          const style = document.createElement("style");
-          style.textContent = `
+          addCSS(`
             #smk-settings {
               border: 1px solid #868686;
               border-radius:5px;
@@ -130,8 +130,7 @@ const plugin = new PluginMain<typeof id>({
               color: #ececec;
               background: unset;
             }
-          `;
-          document.head.appendChild(style);
+          `);
           const resetSettingsBtn = emmet<"button">`
           button.smscButton.red#smk-settings-reset
             {Reset}
