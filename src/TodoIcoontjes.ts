@@ -191,22 +191,13 @@ declare global {
   }
 }
 
-// Plaatsen waar icoontje nog voorkomt:
-// in aanpasscherm rechtsbovenaan
-// in de todo-lijst zelf
-// in de planner
-// bij het openen van een bestaande todo
-
-// soms is dit met verschillende width en height dus als de svg vergeleken wordt moet die onafhankelijk zijn van width en height. mogelijks door enkel innerHTML van svg-element te vergelijken en niet de outerHTML
-// soms komt het ook voor zonder het xmlns attribuut -> reden te meer enkel naar innerHTML te kijken
-
-const id = "planner-todo-icoontjes" as const;
+const id = "todo-icoontjes" as const;
 const plugin = new PluginMain<typeof id>({
   id,
   version: "v0.1",
   inUseDefault: false,
   info: {
-    name: "Planner: Andere to-do icoontjes",
+    name: "To-do: Andere icoontjes",
     description: "Geeft de mogelijkheid om de to-do icoontjes te veranderen.",
     author: "Kanti Kuijk",
   },
@@ -356,7 +347,7 @@ const plugin = new PluginMain<typeof id>({
         .map((_, i) => maakOpties(i));
       const settingsDialog = emmet<"dialog">`
             dialog#smk-settings
-              >h3{Planner: Andere to-do icoontjes}
+              >h3{To-do: Andere icoontjes}
               +h4{Welke icoontjes wil je dat er gebruikt worden?}
               +${array2NodeList(pickers)}
               +em{Dit verandert enkel de icoontjes op deze computer.}
