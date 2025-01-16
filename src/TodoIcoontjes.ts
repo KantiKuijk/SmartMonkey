@@ -220,16 +220,6 @@ const plugin = new PluginMain<typeof id>({
     const observer = new MutationObserver((mutationsList) => {
       for (const mutation of mutationsList) {
         if (mutation.type === "childList") {
-          // const addedNode = mutation.addedNodes[0];
-          // if (
-          //   mutation.target === document.body &&
-          //   mutation.addedNodes.length === 1 &&
-          //   addedNode &&
-          //   addedNode instanceof HTMLDivElement &&
-          //   addedNode.hasAttribute("dialog")
-          // ) {
-          //   console.log(mutation);
-          // }
           mutation.addedNodes.forEach((node) => {
             if (node instanceof SVGElement) {
               if (
