@@ -4,5 +4,6 @@ import "./PlannerGeenBlokletters.js";
 import "./PlannerWeekendVolgendeWeek.js";
 import "./PlannerVerduidelijkOpdrachttype.js";
 import "./TodoIcoontjes.js";
+import "./TodoStandaardDuurtijd.js";
 import { main } from "./SmartMonkeyCore.js";
 main();
