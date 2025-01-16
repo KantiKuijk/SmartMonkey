@@ -55,15 +55,15 @@ const plugin = new PluginMain<typeof id>({
       "Zorgt dat tijdens het weekend de planner standaard gaat naar de week die komt i.p.v. de afgelopen week.",
     author: "Kanti Kuijk",
   },
-  activate: async function () {
+  activate: async (settings) => {
     const href =
       window.performance.getEntriesByType("navigation")[0]?.name ??
       window.location.href;
     const date = new Date();
     const hour = date.getHours();
     const day = (date.getDay() + 6) % 7;
-    const beginDag = 4 + BEGINDAGEN.indexOf(this.user.settings.beginDag);
-    const beginUur = parseInt(this.user.settings.beginUur.slice(0, 2));
+    const beginDag = 4 + BEGINDAGEN.indexOf(settings.beginDag);
+    const beginUur = parseInt(settings.beginUur.slice(0, 2));
     if (
       /^https:\/\/[a-zA-Z]+\.smartschool\.be\/planner\/?$/.test(href) &&
       (day > beginDag || (day === beginDag && hour >= beginUur))

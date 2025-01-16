@@ -36,7 +36,7 @@ export class PluginMain<Id extends SmartMonkey.PluginId> {
   public settingsDefault: NoInfer<SmartMonkey.SettingsOfPlugin<Id>>;
   private activated = false;
   private activator: NoInfer<
-    (settings?: SmartMonkey.SettingsOfPlugin<Id>) => void
+    (settings: SmartMonkey.SettingsOfPlugin<Id>) => void
   >;
   public changeSettings?: NoInfer<
     () => Promise<SmartMonkey.SettingsOfPlugin<Id>>
@@ -50,10 +50,7 @@ export class PluginMain<Id extends SmartMonkey.PluginId> {
     inUseDefault: boolean;
     settingsDefault: NoInfer<SmartMonkey.SettingsOfPlugin<Id>>;
     activate: NoInfer<
-      (
-        this: PluginMain<Id>,
-        settings?: SmartMonkey.SettingsOfPlugin<Id>
-      ) => void
+      (this: PluginMain<Id>, settings: SmartMonkey.SettingsOfPlugin<Id>) => void
     >;
     changeSettings: NoInfer<
       (this: PluginMain<Id>) => Promise<SmartMonkey.SettingsOfPlugin<Id>>
@@ -65,10 +62,7 @@ export class PluginMain<Id extends SmartMonkey.PluginId> {
     info: SMPluginInfo;
     inUseDefault: boolean;
     activate: NoInfer<
-      (
-        this: PluginMain<Id>,
-        settings?: SmartMonkey.SettingsOfPlugin<Id>
-      ) => void
+      (this: PluginMain<Id>, settings: SmartMonkey.SettingsOfPlugin<Id>) => void
     >;
   });
   constructor({
@@ -86,10 +80,7 @@ export class PluginMain<Id extends SmartMonkey.PluginId> {
     inUseDefault: boolean;
     settingsDefault: NoInfer<SmartMonkey.SettingsOfPlugin<Id>>;
     activate: NoInfer<
-      (
-        this: PluginMain<Id>,
-        settings?: SmartMonkey.SettingsOfPlugin<Id>
-      ) => void
+      (this: PluginMain<Id>, settings: SmartMonkey.SettingsOfPlugin<Id>) => void
     >;
     changeSettings?: NoInfer<
       (this: PluginMain<Id>) => Promise<SmartMonkey.SettingsOfPlugin<Id>>
