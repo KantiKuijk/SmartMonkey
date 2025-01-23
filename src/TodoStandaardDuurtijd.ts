@@ -16,8 +16,8 @@ declare global {
 const id = "todo-duurtijd" as const;
 const plugin = new PluginMain<typeof id>({
   id,
-  version: "v0.1",
-  inUseDefault: true,
+  version: "v0.2",
+  inUseDefault: false,
   info: {
     name: "Todo: Standaard duurtijd",
     description: "Verander de standaard duurtijd van aan to-do.",
@@ -31,27 +31,41 @@ const plugin = new PluginMain<typeof id>({
 
     const { duurtijd } = settings;
 
+    const changePeriodInput = (periodInput: HTMLDivElement | null) => {
+      if (!periodInput) return;
+      const velden: NodeListOf<HTMLInputElement> =
+        periodInput.querySelectorAll("input.timeinput");
+      const [begin, eind] = [velden[0], velden[1]];
+      if (!begin || !eind) return;
+      let [uur, min] = begin.value.split(":").map(Number);
+      if (!uur || !min || isNaN(uur) || isNaN(min)) return;
+      min += duurtijd;
+      uur += Math.floor(min / 60);
+      min %= 60;
+      if (uur > 23) [uur, min] = [23, 59];
+      eind.value = `${String(uur).padStart(2, "0")}:${String(min).padStart(
+        2,
+        "0"
+      )}`;
+    };
+
     const observer = new MutationObserver((mutationsList) => {
       for (const mutation of mutationsList) {
         if (mutation.type === "childList") {
           mutation.addedNodes.forEach((node) => {
-            if (node instanceof HTMLDivElement && node.hasAttribute("dialog")) {
-              debugger;
-              const periodInput = node.querySelector(".todo .period-input");
-              if (!periodInput) return;
-              const velden: NodeListOf<HTMLInputElement> =
-                periodInput.querySelectorAll("input.timeinput");
-              const [begin, eind] = [velden[0], velden[1]];
-              if (!begin || !eind) return;
-              let [uur, min] = begin.value.split(":").map(Number);
-              if (!uur || !min || isNaN(uur) || isNaN(min)) return;
-              min += duurtijd;
-              uur += Math.floor(min / 60);
-              min %= 60;
-              if (uur > 23) [uur, min] = [23, 59];
-              eind.value = `${String(uur).padStart(2, "0")}:${String(
-                min
-              ).padStart(2, "0")}`;
+            if (!(node instanceof HTMLDivElement)) return;
+            if (
+              node.classList.contains("todo-quickadd__bubble") &&
+              node.hasAttribute("bubble")
+            ) {
+              const periodInput =
+                node.querySelector<HTMLDivElement>("div.period-input");
+              changePeriodInput(periodInput);
+            } else if (node.hasAttribute("dialog")) {
+              const periodInput = node.querySelector<HTMLDivElement>(
+                ".todo div.period-input"
+              ) as HTMLDivElement;
+              changePeriodInput(periodInput);
             }
           });
         }
@@ -63,7 +77,7 @@ const plugin = new PluginMain<typeof id>({
       subtree: true, // Observe all descendants
     });
   },
-  settingsDefault: { duurtijd: 30 },
+  settingsDefault: { duurtijd: 25 },
   changeSettings: async function () {
     return new Promise((resolve) => {
       const settings = this.user.settings;
