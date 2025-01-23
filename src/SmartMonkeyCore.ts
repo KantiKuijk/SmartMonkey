@@ -6,7 +6,7 @@ export type SMPluginInfo = {
   author: string;
 };
 
-export const VERSION = "v0.2";
+export const VERSION = "v0.2b";
 
 // @ts-expect-error object gets populated when every plugin registers itself
 // it is up to the plugin to make sure it is both registered and namespaced
