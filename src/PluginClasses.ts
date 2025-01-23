@@ -121,6 +121,9 @@ export class PluginMain<Id extends SmartMonkey.PluginId> {
       console.log(
         `SMK: Plugin ${this.id} was activated with version ${state.version}, but it is version ${this.version}.`
       );
+      SMState.changePluginState(this.id, {
+        version: this.version,
+      });
       // Do something with the version difference if ever implemented
     }
     const pluginUser = new PluginUser({
@@ -252,7 +255,7 @@ export class SMState {
     state: Partial<Exclude<SMStateObj["plugins"][PID], undefined>>
   ) {
     SMState.plugins[pid] = {
-      ...USERPLUGINS[pid].state,
+      ...(USERPLUGINS[pid]?.state ?? {}),
       ...SMState.plugins[pid],
       ...state,
     };
