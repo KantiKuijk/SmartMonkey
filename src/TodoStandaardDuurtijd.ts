@@ -16,7 +16,7 @@ declare global {
 const id = "todo-duurtijd" as const;
 const plugin = new PluginMain<typeof id>({
   id,
-  version: "v0.2",
+  version: "v0.2.1",
   inUseDefault: false,
   info: {
     name: "Todo: Standaard duurtijd",
@@ -32,6 +32,7 @@ const plugin = new PluginMain<typeof id>({
     const { duurtijd } = settings;
 
     const changePeriodInput = (periodInput: HTMLDivElement | null) => {
+      debugger;
       if (!periodInput) return;
       const velden: NodeListOf<HTMLInputElement> =
         periodInput.querySelectorAll("input.timeinput");
@@ -47,6 +48,9 @@ const plugin = new PluginMain<typeof id>({
         2,
         "0"
       )}`;
+      // Trigger the blur event to update the to-do
+      const event = new Event("blur", { bubbles: false, cancelable: true });
+      eind.dispatchEvent(event);
     };
 
     const observer = new MutationObserver((mutationsList) => {
