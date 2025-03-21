@@ -12,7 +12,7 @@ declare global {
 const id = "hotkeys" as const;
 const plugin = new PluginMain<typeof id>({
   id,
-  version: "v0.1",
+  version: "v0.1.1",
   inUseDefault: true,
   info: {
     name: "Hotkeys",
@@ -39,8 +39,9 @@ const plugin = new PluginMain<typeof id>({
           KeyT: "helpdesk#!tickets",
         }[event.code];
         if (typeof path === "string") {
-          debugger;
-          window.location.href = `https://${window.location.host}/${path}`;
+          (
+            window.top ?? window.parent
+          ).location.href = `https://${window.location.host}/${path}`;
         }
       }
     });
