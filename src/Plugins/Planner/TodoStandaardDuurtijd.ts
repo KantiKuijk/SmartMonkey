@@ -1,6 +1,5 @@
-import { emmet } from "./emmet.js";
-import { PluginMain } from "./PluginClasses.js";
-import { registerPlugin } from "./SmartMonkeyCore.js";
+import { emmet } from "../../Core/emmet.js";
+import { PluginMain, registerPlugin } from "../../Core/Plugins.js";
 
 declare global {
   namespace SmartMonkey {
@@ -46,7 +45,7 @@ const plugin = new PluginMain<typeof id>({
       if (uur > 23) [uur, min] = [23, 59];
       eind.value = `${String(uur).padStart(2, "0")}:${String(min).padStart(
         2,
-        "0"
+        "0",
       )}`;
       // Trigger the blur event to update the to-do
       const event = new Event("blur", { bubbles: false, cancelable: true });
@@ -67,7 +66,7 @@ const plugin = new PluginMain<typeof id>({
               changePeriodInput(periodInput);
             } else if (node.hasAttribute("dialog")) {
               const periodInput = node.querySelector<HTMLDivElement>(
-                ".todo div.period-input"
+                ".todo div.period-input",
               ) as HTMLDivElement;
               changePeriodInput(periodInput);
             }
@@ -95,7 +94,7 @@ const plugin = new PluginMain<typeof id>({
       });
       const duurtijdVeld = emmet<"input">`
         input#smk-duurtijd[type=number][min=0][max=300][step=5][value=${String(
-          duurtijd
+          duurtijd,
         )}]
       `;
       duurtijdVeld.addEventListener("change", () => {

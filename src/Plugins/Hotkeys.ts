@@ -1,5 +1,4 @@
-import { PluginMain } from "./PluginClasses.js";
-import { registerPlugin } from "./SmartMonkeyCore.js";
+import { PluginMain, registerPlugin } from "../Core/Plugins.js";
 
 declare global {
   namespace SmartMonkey {
@@ -39,9 +38,8 @@ const plugin = new PluginMain<typeof id>({
           KeyT: "helpdesk#!tickets",
         }[event.code];
         if (typeof path === "string") {
-          (
-            window.top ?? window.parent
-          ).location.href = `https://${window.location.host}/${path}`;
+          (window.top ?? window.parent).location.href =
+            `https://${window.location.host}/${path}`;
         }
       }
     });

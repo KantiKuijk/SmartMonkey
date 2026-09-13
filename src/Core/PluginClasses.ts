@@ -1,32 +1,4 @@
-import { z } from "zod";
-import {
-  MAINPLUGINS,
-  PLUGINIDS,
-  USERPLUGINS,
-  VERSION,
-  type SMPluginInfo,
-} from "./SmartMonkeyCore.js";
-
-declare global {
-  namespace SmartMonkey {
-    interface MainPlugins {}
-    interface PluginsSettings {}
-    type PluginId = keyof MainPlugins;
-    type PluginWithSettingsId = keyof PluginsSettings;
-    type SettingsOfPlugin<PID extends PluginId> =
-      PID extends PluginWithSettingsId ? PluginsSettings[PID] : undefined;
-    type UserPlugins = {
-      [pid in PluginId]: PluginUser<pid>;
-    };
-    // type PluginsSettings = {
-    //   [pid in PluginIds]: MainPlugins[pid] extends PluginMain<pid, infer S>
-    //     ? S
-    //     : never;
-    // };
-    type MainPlugin = MainPlugins[PluginId];
-    type UserPlugin = UserPlugins[PluginId];
-  }
-}
+import { SMState } from "./Helpers.js";
 
 export class PluginMain<Id extends SmartMonkey.PluginId> {
   public id: Id;
@@ -119,7 +91,7 @@ export class PluginMain<Id extends SmartMonkey.PluginId> {
     const state = { ...this.stateDefault, ...storedState };
     if (state.version !== this.version) {
       console.log(
-        `SMK: Plugin ${this.id} was activated with version ${state.version}, but it is version ${this.version}.`
+        `SMK: Plugin ${this.id} was activated with version ${state.version}, but it is version ${this.version}.`,
       );
       SMState.changePluginState(this.id, {
         version: this.version,
@@ -140,129 +112,11 @@ export class PluginMain<Id extends SmartMonkey.PluginId> {
   }
 }
 
-type SMStateObj = {
+export type SMPluginState<PID extends SmartMonkey.PluginId> = {
   version: string;
-  plugins: {
-    [pid in SmartMonkey.PluginId]?: {
-      version: string;
-      inUse: boolean;
-      settings: SmartMonkey.SettingsOfPlugin<pid>;
-    };
-  };
+  inUse: boolean;
+  settings: SmartMonkey.SettingsOfPlugin<PID>;
 };
-
-export class SMState {
-  public static storagekey = "smartmonkey";
-  public static state: SMStateObj;
-  public static zod = () => {
-    // debugger;
-    console.log("PLUGINS", PLUGINIDS);
-    return z.object({
-      version: z.string().min(2),
-      plugins: z.record(
-        // the array containing all the plugin ids is just an array of strings
-        z.enum(PLUGINIDS as [string, ...string[]]),
-        z
-          .object({
-            version: z.string().min(2),
-            inUse: z.boolean(),
-            settings: z.unknown().optional(),
-          })
-          .optional()
-      ),
-    });
-  };
-  public static version: string;
-  public static plugins: SMStateObj["plugins"];
-
-  public static init(state?: SMStateObj) {
-    const newState = state ?? SMState.getFromStorage();
-    SMState.state = newState;
-    SMState.version = newState.version;
-    SMState.plugins = newState.plugins;
-  }
-
-  public static getFromStorage() {
-    try {
-      console.log("getting from storage");
-      const storedState = localStorage.getItem(SMState.storagekey);
-      console.log("stored");
-      console.log(storedState);
-      if (!storedState) return SMState.empty();
-      const state = JSON.parse(storedState);
-      console.log("getting state", state);
-      const stateParsed = SMState.zod().parse(state) as SMStateObj;
-      return stateParsed;
-    } catch (e) {
-      console.error(e);
-      window.alert(
-        "SmartMonkey heeft een fout nootje gegeten en zal zichzelf resetten."
-      );
-      const state = SMState.empty();
-      return state;
-    }
-  }
-
-  public static empty(): SMStateObj {
-    this.init({
-      version: VERSION,
-      plugins: Object.fromEntries(
-        PLUGINIDS.map((pid) => {
-          const main = MAINPLUGINS[pid];
-          return [
-            pid,
-            {
-              version: main.version,
-              inUse: main.inUseDefault,
-              settings: main.settingsDefault,
-            },
-          ];
-        })
-      ),
-    });
-    this.save();
-    return this.state;
-  }
-
-  protected static save() {
-    console.log("saving to", SMState.state);
-    localStorage.setItem(SMState.storagekey, JSON.stringify(SMState.state));
-  }
-  public static overwrite(state: SMStateObj) {
-    // overwrite the state, only use this as an exception, prefer changePluginState
-    console.log("overwriting", state);
-    const parsed = SMState.zod().safeParse(state);
-    if (!parsed.success) {
-      console.error(parsed.error);
-      return false;
-    } else {
-      SMState.state = parsed.data;
-      SMState.save();
-      return true;
-    }
-  }
-
-  public static reset() {
-    SMState.state = SMState.empty();
-    SMState.save();
-  }
-
-  public static getPluginState(pid: SmartMonkey.PluginId) {
-    return SMState.plugins[pid];
-  }
-  public static changePluginState<PID extends SmartMonkey.PluginId>(
-    pid: PID,
-    state: Partial<Exclude<SMStateObj["plugins"][PID], undefined>>
-  ) {
-    SMState.plugins[pid] = {
-      ...(USERPLUGINS[pid]?.state ?? {}),
-      ...SMState.plugins[pid],
-      ...state,
-    };
-    SMState.save();
-  }
-}
-
 export class PluginUser<Id extends SmartMonkey.PluginId> {
   public id: Id;
   public version: string;
@@ -311,3 +165,8 @@ export class PluginUser<Id extends SmartMonkey.PluginId> {
     return this._inUse;
   }
 }
+export type SMPluginInfo = {
+  name: string;
+  description: string;
+  author: string;
+};

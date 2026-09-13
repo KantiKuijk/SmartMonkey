@@ -1,7 +1,6 @@
-import { emmet } from "./emmet.js";
-import { PluginMain } from "./PluginClasses.js";
-import { registerPlugin } from "./SmartMonkeyCore.js";
-import { getUserIDs } from "./SmartMonkeyHelpers.js";
+import { emmet } from "../../Core/emmet.js";
+import { PluginMain, registerPlugin } from "../../Core/Plugins.js";
+import { getUserIDs } from "../../Core/Helpers.js";
 
 const BEGINUREN = [
   "0:00",
@@ -94,7 +93,7 @@ const plugin = new PluginMain<typeof id>({
       });
       const dagOpts = BEGINDAGEN.map(
         (dag) =>
-          `option[value=${dag}]{${dag}}${dag === beginDag ? "[selected]" : ""}`
+          `option[value=${dag}]{${dag}}${dag === beginDag ? "[selected]" : ""}`,
       ).join("+");
       const dagPicker = emmet<"select">`
         select#smk-dag
@@ -105,7 +104,7 @@ const plugin = new PluginMain<typeof id>({
       });
       const uurOpts = BEGINUREN.map(
         (uur) =>
-          `option[value=${uur}]{${uur}}${uur === beginUur ? "[selected]" : ""}`
+          `option[value=${uur}]{${uur}}${uur === beginUur ? "[selected]" : ""}`,
       ).join("+");
       const uurPicker = emmet<"select">`
         select#smk-uur

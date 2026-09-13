@@ -1,5 +1,4 @@
-import { PluginMain } from "./PluginClasses.js";
-import { registerPlugin } from "./SmartMonkeyCore.js";
+import { PluginMain, registerPlugin } from "../../Core/Plugins.js";
 
 declare global {
   namespace SmartMonkey {

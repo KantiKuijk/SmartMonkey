@@ -1,7 +1,6 @@
-import { emmet } from "./emmet.js";
-import { PluginMain } from "./PluginClasses.js";
-import { registerPlugin } from "./SmartMonkeyCore.js";
-import { array2NodeList } from "./utilities.js";
+import { emmet } from "../../Core/emmet.js";
+import { PluginMain, registerPlugin } from "../../Core/Plugins.js";
+import { array2NodeList } from "../../Core/utilities.js";
 
 const SVGs = {
   vlag: '<svg xmlns="http://www.w3.org/2000/svg" width="$w" height="$h" viewBox="0 0 16 16" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.1287 8.50133C11.0667 8.50133 9.98733 8.198 8.846 7.878C7.66733 7.54733 6.44867 7.20467 5.20333 7.20467C4.53667 7.20467 3.58933 7.30133 3 7.49733V0.891333C3.57667 0.629333 4.52467 0.5 5.202 0.5C6.264 0.5 7.34333 0.804 8.48533 1.12533C9.664 1.45667 10.8833 1.8 12.13 1.8C12.7933 1.8 13.412 1.70333 14 1.50667V8.10933C13.4227 8.37267 12.8067 8.50133 12.1287 8.50133Z" fill="currentColor"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M3 0.5V15.5C3 15.7761 2.77614 16 2.5 16C2.22386 16 2 15.7761 2 15.5V0.5C2 0.223858 2.22386 0 2.5 0C2.77614 0 3 0.223858 3 0.5Z" fill="currentColor"></path></svg>',
@@ -149,7 +148,7 @@ type Icoontjes = [
   Icoon,
   Icoon,
   Icoon,
-  Icoon
+  Icoon,
 ];
 const icoontjes = Object.keys(SVGs) as Icoon[];
 
@@ -208,7 +207,7 @@ const plugin = new PluginMain<typeof id>({
 
     function replaceSVG(svg: SVGElement) {
       const index = DEFAULTSVGs.findIndex((icoon) =>
-        areSameSVG(svg.outerHTML, SVGs[icoon])
+        areSameSVG(svg.outerHTML, SVGs[icoon]),
       );
       if (index === -1) return;
       const icoon = settings[index];
@@ -224,7 +223,7 @@ const plugin = new PluginMain<typeof id>({
             if (node instanceof SVGElement) {
               if (
                 ["header__icon", "header", "detail-header", "todo"].every(
-                  (cls) => node.closest(`.${cls}`)
+                  (cls) => node.closest(`.${cls}`),
                 )
               ) {
                 // Icoontje linksboven in dialog
@@ -312,7 +311,7 @@ const plugin = new PluginMain<typeof id>({
             (icoon) =>
               `option[value=${icoon}]{${icoon.replaceAll("_", " ")}}${
                 icoon === settings[i] ? "[selected]" : ""
-              }`
+              }`,
           )
           .join("+");
 
@@ -327,7 +326,7 @@ const plugin = new PluginMain<typeof id>({
           preview.innerHTML = maakIcoon(settings[i]!);
         });
         const label = emmet<"label">`label{Icoon ${String(
-          i + 1
+          i + 1,
         )}}[for=smk-icoon-${String(i)}]`;
         return emmet<"div">`div>${label}+${icoonPicker}+${preview}`;
       };

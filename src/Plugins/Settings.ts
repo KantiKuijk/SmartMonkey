@@ -1,12 +1,13 @@
-import { emmet } from "./emmet.js";
-import { PluginMain, SMState } from "./PluginClasses.js";
+import { emmet } from "../Core/emmet.js";
+import { PluginMain } from "../Core/Plugins.js";
+import { SMState } from "../Core/Helpers.js";
+import { registerPlugin } from "../Core/Plugins.js";
 import {
   MAINPLUGINS,
   PLUGINIDS,
-  registerPlugin,
   USERPLUGINS,
-} from "./SmartMonkeyCore.js";
-import { addCSS, array2NodeList } from "./utilities.js";
+} from "../Core/PluginRegistries.js";
+import { addCSS, array2NodeList } from "../Core/utilities.js";
 
 declare global {
   namespace SmartMonkey {
@@ -39,7 +40,7 @@ const plugin = new PluginMain<typeof id>({
         document.querySelector(".smscSettings")?.parentElement;
       if (!smscSettings) return;
       const existingSettingsLink = smscSettings.querySelector(
-        ".smscAdminNav_body_link"
+        ".smscAdminNav_body_link",
       );
       if (!existingSettingsLink) return;
       // I would thing a cloned Element is also an Element, could be wrong though
@@ -47,7 +48,7 @@ const plugin = new PluginMain<typeof id>({
       // always has parent since its inception is based on a queryselector on an alement
       {
         const title = settingsLink.querySelector(
-          ".smscAdminNav_body_linkdivTitle"
+          ".smscAdminNav_body_linkdivTitle",
         );
         if (title) {
           title.textContent = "SmartMonkey";
@@ -58,7 +59,7 @@ const plugin = new PluginMain<typeof id>({
           }
         }
         const image = settingsLink.querySelector(
-          "div.smscAdminNav_body_linkdivIcon"
+          "div.smscAdminNav_body_linkdivIcon",
         ) as HTMLDivElement;
         if (image) {
           image.style.backgroundImage =
@@ -162,7 +163,7 @@ const plugin = new PluginMain<typeof id>({
             +${(() => {
               return array2NodeList(
                 PLUGINIDS.filter(
-                  (pid) => !ALWAYSENABLEDPLUGINS.includes(pid)
+                  (pid) => !ALWAYSENABLEDPLUGINS.includes(pid),
                 ).map((pid) => {
                   const main = MAINPLUGINS[pid];
                   const user = USERPLUGINS[pid];
@@ -194,7 +195,7 @@ const plugin = new PluginMain<typeof id>({
                     SMState.changePluginState(pid, { inUse: inUseCB.checked });
                   });
                   return cbDiv;
-                })
+                }),
               );
             })()}
             +div.smscButtonContainer[style="margin-top:1em;"]
