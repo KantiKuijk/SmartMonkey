@@ -5,6 +5,8 @@
 // @description  Voegt functionaliteit toe aan Smartschool
 // @author       Kanti Kuijk
 // @match        https://*.smartschool.be/*
+// @exclude      https://wopi2.smartschool.be/*
+// @exclude      https://oauth.smartschool.be/*
 // @icon         https://raw.githubusercontent.com/KantiKuijk/SmartMonkey/refs/heads/main/img/smk_gradient_256.png
 // @connect      raw.githubusercontent.com
 // @grant        GM_xmlhttpRequest
