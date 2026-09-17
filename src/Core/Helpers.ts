@@ -66,7 +66,7 @@ export async function getModules(
 ) {
   /* Gets all modules that are available to the user, filtered by type */
   const modules = SMState.getHelperState("modules");
-  if (modules.length) return modules.filter((m) => types[m.type]);
+  if (modules.length && !force) return modules.filter((m) => types[m.type]);
   document
     .querySelector("#shortcutsMenu")
     ?.querySelectorAll<HTMLAnchorElement>(
@@ -126,8 +126,12 @@ export async function getModules(
         });
       });
   }
-  SMState.setHelperState("modules", modules);
-  return modules.filter((m) => types[m.type]);
+  const uniqueModules = modules
+    .reverse()
+    .filter((m, i, arr) => arr.findIndex((m2) => m2.id === m.id) === i)
+    .reverse();
+  SMState.setHelperState("modules", uniqueModules);
+  return uniqueModules.filter((m) => types[m.type]);
 }
 
 /*** SMState ***/
