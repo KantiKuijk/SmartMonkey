@@ -1,5 +1,6 @@
 import "../Plugins/Settings.js";
 import "../Plugins/UI/NavknoppenToevoegen.js";
+import "../Plugins/UI/NavknoppenAlsIcoontjes.js";
 import "../Plugins/UI/VakkenknopVerwijderen.js";
 import "../Plugins/Planner/PlannerGeenBlokletters.js";
 import "../Plugins/Planner/PlannerWeekendVolgendeWeek.js";

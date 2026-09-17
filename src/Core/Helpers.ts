@@ -58,11 +58,13 @@ const modulesZod = z.array(
     href: z.string().min(1),
     target: z.string().min(1).optional(),
     type: z.enum(["smartschool", "link"]),
+    icon: z.string().min(1).optional(),
   }),
 );
 export type Module = z.infer<typeof modulesZod>;
 export async function getModules(
   types: { [T in ModuleType]?: boolean } = { smartschool: true },
+  force: boolean = false,
 ) {
   /* Gets all modules that are available to the user, filtered by type */
   const modules = SMState.getHelperState("modules");
@@ -82,6 +84,10 @@ export async function getModules(
         display,
         href,
         target: link?.getAttribute("target") || undefined,
+        icon: getComputedStyle(link).backgroundImage.replace(
+          /url\((['"])?(.*?)\1\)/gi,
+          "$2",
+        ),
       });
     });
   const linksMenu = document.querySelector("#linksMenu");
@@ -123,6 +129,10 @@ export async function getModules(
           display,
           href,
           target: link?.getAttribute("target") || undefined,
+          icon: getComputedStyle(link).backgroundImage.replace(
+            /url\((['"])?(.*?)\1\)/gi,
+            "$2",
+          ),
         });
       });
   }
