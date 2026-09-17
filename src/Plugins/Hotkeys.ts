@@ -20,8 +20,6 @@ const plugin = new PluginMain<typeof id>({
   },
   activate: async function () {
     document.addEventListener("keydown", function (event) {
-      console.log(event);
-      console.log(event.altKey, event.shiftKey, event.code);
       if (event.altKey && event.shiftKey) {
         // Check for Control + Option (Alt)
         const path = {
