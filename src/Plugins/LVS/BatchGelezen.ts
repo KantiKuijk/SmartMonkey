@@ -12,7 +12,7 @@ declare global {
 const id = "lvs-batch-gelezen" as const;
 const plugin = new PluginMain<typeof id>({
   id,
-  version: "v0.1",
+  version: "v0.2",
   inUseDefault: true,
   info: {
     name: "LVS: Batch gelezen",
@@ -57,17 +57,30 @@ const plugin = new PluginMain<typeof id>({
     batchGelezenBtn.style.border = "unset";
     batchGelezenBtn.addEventListener("click", async () => {});
     actionButtonsWrapper.appendChild(batchGelezenBtn);
-
     const bgdSubmitBtn = emmet<"button">`button.smscButton.yellow#smk-lvs-batch-gelezen-dialog-submit{Voer uit}`;
-    const bgdValueField = emmet<"input">`input#smk-lvs-batch-gelezen-dialog-filter-value.smk-input[type=text][minlength=3][required]`;
+    const bgdValueField = emmet<"input">`input#smk-lvs-batch-gelezen-dialog-filter-value.smk-input[type=text][minlength=2][required]`;
     const bgdMatchField = emmet<"select">`select#smk-lvs-batch-gelezen-dialog-filter-match.smk-select
       >option[value=exact]{gelijk is aan}
       +option[value=contains]{bevat is in}`;
     const bgdFieldField = emmet<"select">`select#smk-lvs-batch-gelezen-dialog-filter-field.smk-select
       >option[value=titel]{de titel}
       +option[value=type]{het type}
+      +option[value=datum]{de datum}
+      +option[value=leerling]{de leerling}
+      +option[value=klas]{de klas}
       +option[value=auteur]{de auteur}
       +option[value=inhoud]{de inhoud}`;
+    const bgdCaseSensitiveField = emmet<"input">`(input#smk-lvs-batch-gelezen-dialog-filter-casesensitive.smk-input[type=checkbox]+label[for=smk-lvs-batch-gelezen-dialog-filter-casesensitive]{Hoofdlettergevoelig})`;
+
+    const { value, match, field, caseSensitive } = JSON.parse(
+      sessionStorage.getItem("smk-lvs-batch-gelezen-dialog-last-filter") ||
+        "{}",
+    );
+    if (value) bgdValueField.value = value;
+    if (match) bgdMatchField.value = match;
+    if (field) bgdFieldField.value = field;
+    if (caseSensitive) bgdCaseSensitiveField.checked = caseSensitive;
+
     const batchGelezenDialog = emmet<"dialog">`
           dialog#smk-lvs-batch-gelezen-dialog.smk-dialog[popover=auto]
           >button.smscButton.red#smk-lvs-batch-gelezen-dialog-close{Annuleer}[popovertarget=smk-lvs-batch-gelezen-dialog][popovertargetaction=hide]
@@ -76,6 +89,7 @@ const plugin = new PluginMain<typeof id>({
           +${bgdValueField}
           +${bgdMatchField}
           +${bgdFieldField}
+          +${bgdCaseSensitiveField}
           +div.smscButtonContainer[style="margin-top:1em;"]
             >${bgdSubmitBtn}`;
     document.body.append(batchGelezenDialog);
@@ -86,7 +100,7 @@ const plugin = new PluginMain<typeof id>({
         contains: (value: string, comparison: string) =>
           value.includes(comparison),
       }[bgdMatchField.value as "exact" | "contains"];
-      const comparison = bgdValueField.value.trim().toLowerCase();
+      const comparison = bgdValueField.value.trim();
       const matching = Array.from(
         dossierlijnenFS.querySelectorAll<HTMLTableRowElement>(
           "tr.search_notes_itemrow",
@@ -94,16 +108,40 @@ const plugin = new PluginMain<typeof id>({
       ).filter((tr) => {
         const veldWaarde = ((
           tr: HTMLTableRowElement,
-          veld: "titel" | "type" | "auteur" | "inhoud",
+          veld:
+            | "titel"
+            | "type"
+            | "auteur"
+            | "inhoud"
+            | "leerling"
+            | "klas"
+            | "datum",
         ) => {
           switch (veld) {
             case "titel":
               return tr.children[1]?.textContent || "";
             case "type":
               return tr.children[2]?.textContent || "";
+            case "leerling":
+              return (
+                tr.parentElement?.parentElement?.parentElement?.parentElement
+                  ?.querySelector("div.search_notes_pupilname")
+                  ?.textContent.match(/\w[^(]*\w/)?.[0] || ""
+              );
+            case "klas":
+              return (
+                tr.parentElement?.parentElement?.parentElement?.parentElement
+                  ?.querySelector("div.search_notes_pupilname")
+                  ?.textContent.match(/\(([^)]*)\)/)?.[1] || ""
+              );
             case "auteur":
               return (
                 tr.children[3]?.querySelector("div.userDiv")?.textContent || ""
+              );
+            case "datum":
+              return (
+                tr.children[3]?.querySelector("div.timeClock")?.textContent ||
+                ""
               );
             case "inhoud":
               return (
@@ -112,8 +150,25 @@ const plugin = new PluginMain<typeof id>({
                 )?.children[2]?.children[1]?.textContent || ""
               );
           }
-        })(tr, bgdFieldField.value as "titel" | "type" | "auteur" | "inhoud");
-        return filter(veldWaarde.trim().toLowerCase(), comparison);
+        })(
+          tr,
+          bgdFieldField.value as
+            | "titel"
+            | "type"
+            | "auteur"
+            | "inhoud"
+            | "leerling"
+            | "klas"
+            | "datum",
+        );
+        if (bgdCaseSensitiveField.checked) {
+          return filter(veldWaarde.trim(), comparison);
+        } else {
+          return filter(
+            veldWaarde.trim().toLowerCase(),
+            comparison.toLowerCase(),
+          );
+        }
       });
       confirm(`Markeer ${matching.length} lijn(en) als gelezen?`) &&
         matching.forEach((tr) => {
@@ -122,6 +177,15 @@ const plugin = new PluginMain<typeof id>({
           )?.click();
         });
       batchGelezenDialog.hidePopover();
+      sessionStorage.setItem(
+        "smk-lvs-batch-gelezen-dialog-last-filter",
+        JSON.stringify({
+          value: bgdValueField.value,
+          match: bgdMatchField.value,
+          field: bgdFieldField.value,
+          caseSensitive: bgdCaseSensitiveField.checked,
+        }),
+      );
     });
   },
 });
