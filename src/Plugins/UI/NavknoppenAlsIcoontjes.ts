@@ -18,19 +18,26 @@ function setIconForNavbarButton(
       child.textContent = "";
     }
   });
-  btn.style.backgroundImage = `url(${icon})`;
-  btn.style.backgroundSize = "contain";
-  btn.style.backgroundRepeat = "no-repeat";
-  btn.style.backgroundPosition = "center";
-  btn.style.backgroundSize = "24px";
-  btn.style.padding = ".57em 8px .57em 40px";
-  btn.style.aspectRatio = "1/1";
+  if (
+    /^(ftp|http|https):\/\/[^ "]+$/.test(icon) ||
+    /^(.+)\/([^\/]+)$/.test(icon)
+  ) {
+    btn.style.backgroundImage = `url(${icon})`;
+    btn.style.backgroundSize = "contain";
+    btn.style.backgroundRepeat = "no-repeat";
+    btn.style.backgroundPosition = "center";
+    btn.style.backgroundSize = "24px";
+    btn.style.padding = ".57em 8px .57em 40px";
+    btn.style.aspectRatio = "1/1";
+  } else {
+    btn.textContent = icon;
+  }
 }
 
 const id = "Navknoppen-als-iconen" as const;
 const plugin = new PluginMain<typeof id>({
   id,
-  version: "v0.1",
+  version: "v0.2",
   inUseDefault: false,
   info: {
     name: "Nav: Knoppen als iconen",
@@ -38,7 +45,7 @@ const plugin = new PluginMain<typeof id>({
     author: "Kanti Kuijk",
   },
   activate: async () => {
-    const modules = await getModules({ smartschool: true, link: true });
+    const modules = await getModules();
     const navBarBtns = document.querySelectorAll<HTMLButtonElement>(
       "#smscTopContainer>nav button.topnav__btn",
     );

@@ -16,7 +16,7 @@ declare global {
 const id = "Navknoppen-toevoegen" as const;
 const plugin = new PluginMain<typeof id>({
   id,
-  version: "v0.1",
+  version: "v0.2",
   inUseDefault: false,
   info: {
     name: "Nav: Knoppen toevoegen",
@@ -29,7 +29,7 @@ const plugin = new PluginMain<typeof id>({
     );
     if (!favsBar) console.warn("Kon favorietenbalk niet vinden");
     else {
-      const modules = await getModules({ smartschool: true, link: true });
+      const modules = await getModules();
       settings.forEach(async (moduleId) => {
         const module = modules.find((m) => m.id === moduleId);
         if (module === undefined)
@@ -57,6 +57,9 @@ const plugin = new PluginMain<typeof id>({
       const linkModules = (await getModules({ link: true })).sort((a, b) =>
         a.display.localeCompare(b.display),
       );
+      const customModules = (await getModules({ custom: true })).sort((a, b) =>
+        a.display.localeCompare(b.display),
+      );
       const makeModuleOpts = (index: number, selectedId?: string) => {
         const smscModulesOpts = smscModules
           .map(
@@ -70,6 +73,12 @@ const plugin = new PluginMain<typeof id>({
               `option[value=${module.id}]{${module.display}}${module.id === selectedId ? "[selected]" : ""}`,
           )
           .join("+");
+        const customModulesOpts = customModules
+          .map(
+            (module) =>
+              `option[value=${module.id}]{${module.display}}${module.id === selectedId ? "[selected]" : ""}`,
+          )
+          .join("+");
         const modulePicker = emmet<"select">`
         select#smk-fav-module-${String(index)}
           >option{* Kies module *}[disabled]
@@ -77,6 +86,8 @@ const plugin = new PluginMain<typeof id>({
           +${smscModulesOpts}
           +option{~ Externe links ~}[disabled]
           +${linkModulesOpts}
+          +option{~ Aangepaste modules ~}[disabled]
+          +${customModulesOpts}
       `;
         modulePicker.addEventListener("change", () => {
           settings[index] = modulePicker.value;

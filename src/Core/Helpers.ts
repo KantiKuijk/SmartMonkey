@@ -50,20 +50,24 @@ export async function getUserIDs() {
   });
 }
 
-export type ModuleType = "smartschool" | "link";
+export type ModuleType = "smartschool" | "link" | "custom";
 const modulesZod = z.array(
   z.object({
     id: z.string().min(1),
     display: z.string().min(1),
     href: z.string().min(1),
     target: z.string().min(1).optional(),
-    type: z.enum(["smartschool", "link"]),
+    type: z.enum(["smartschool", "link", "custom"]),
     icon: z.string().min(1).optional(),
   }),
 );
 export type Module = z.infer<typeof modulesZod>;
 export async function getModules(
-  types: { [T in ModuleType]?: boolean } = { smartschool: true },
+  types: { [T in ModuleType]?: boolean } = {
+    smartschool: true,
+    link: true,
+    custom: true,
+  },
   force: boolean = false,
 ) {
   /* Gets all modules that are available to the user, filtered by type */
@@ -136,6 +140,27 @@ export async function getModules(
         });
       });
   }
+  const handigeLinks = document.querySelector<HTMLDivElement>(
+    "div.homepage div#leftcontainer div.homepage__block__content",
+  );
+  if (handigeLinks) {
+    handigeLinks.querySelectorAll<HTMLParagraphElement>("p").forEach((p) => {
+      const link = p.querySelector<HTMLAnchorElement>("a");
+      if (!link) return;
+      const href = link.getAttribute("href");
+      const display = link.textContent.trim();
+      if (!href || !display) return;
+      modules.push({
+        type: "custom",
+        id: `custom-${display.toLowerCase().replace(/\s+/g, "-")}`,
+        display,
+        href,
+        target: link?.getAttribute("target") || undefined,
+        icon: p.textContent.match(/^([^\s]*)\s/)?.[1] || "",
+      });
+    });
+  }
+
   const uniqueModules = modules
     .reverse()
     .filter((m, i, arr) => arr.findIndex((m2) => m2.id === m.id) === i)
