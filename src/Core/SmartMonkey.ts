@@ -8,6 +8,7 @@ import "../Plugins/Planner/PlannerVerduidelijkOpdrachttype.js";
 import "../Plugins/Planner/TodoIcoontjes.js";
 import "../Plugins/Planner/TodoStandaardDuurtijd.js";
 import "../Plugins/LVS/BatchGelezen.js";
+import "../Plugins/Skore/CSVImport.js";
 import "../Plugins/Hotkeys.js";
 import { SMState } from "./Helpers.js";
 import { isPluginId } from "./Plugins.js";
