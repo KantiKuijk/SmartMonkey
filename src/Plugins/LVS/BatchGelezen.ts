@@ -70,7 +70,8 @@ const plugin = new PluginMain<typeof id>({
       +option[value=klas]{de klas}
       +option[value=auteur]{de auteur}
       +option[value=inhoud]{de inhoud}`;
-    const bgdCaseSensitiveField = emmet<"input">`(input#smk-lvs-batch-gelezen-dialog-filter-casesensitive.smk-input[type=checkbox]+label[for=smk-lvs-batch-gelezen-dialog-filter-casesensitive]{Hoofdlettergevoelig})`;
+    const bgdCaseSensitiveCheckBox = emmet<"input">`input#smk-lvs-batch-gelezen-dialog-filter-casesensitive.smk-input[type=checkbox]`;
+    const bgdCaseSensitiveField = emmet<"(">`(${bgdCaseSensitiveCheckBox}+label[for=smk-lvs-batch-gelezen-dialog-filter-casesensitive]{Hoofdlettergevoelig})`;
 
     const { value, match, field, caseSensitive } = JSON.parse(
       sessionStorage.getItem("smk-lvs-batch-gelezen-dialog-last-filter") ||
@@ -79,7 +80,7 @@ const plugin = new PluginMain<typeof id>({
     if (value) bgdValueField.value = value;
     if (match) bgdMatchField.value = match;
     if (field) bgdFieldField.value = field;
-    if (caseSensitive) bgdCaseSensitiveField.checked = caseSensitive;
+    if (caseSensitive) bgdCaseSensitiveCheckBox.checked = caseSensitive;
 
     const batchGelezenDialog = emmet<"dialog">`
           dialog#smk-lvs-batch-gelezen-dialog.smk-dialog[popover=auto]
@@ -161,7 +162,7 @@ const plugin = new PluginMain<typeof id>({
             | "klas"
             | "datum",
         );
-        if (bgdCaseSensitiveField.checked) {
+        if (bgdCaseSensitiveCheckBox.checked) {
           return filter(veldWaarde.trim(), comparison);
         } else {
           return filter(
@@ -183,7 +184,7 @@ const plugin = new PluginMain<typeof id>({
           value: bgdValueField.value,
           match: bgdMatchField.value,
           field: bgdFieldField.value,
-          caseSensitive: bgdCaseSensitiveField.checked,
+          caseSensitive: bgdCaseSensitiveCheckBox.checked,
         }),
       );
     });
