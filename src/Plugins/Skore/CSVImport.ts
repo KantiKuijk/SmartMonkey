@@ -71,7 +71,7 @@ const plugin = new PluginMain<typeof id>({
           if (!row) return;
           const [klasnummer, achternaam, voornaam] = div.textContent
             .trim()
-            .split(/[.,] +/) as [string, string, string];
+            .split(/[.,-] +/) as [string, string, string];
           const id = row.replace("pupil_", "");
           llnn.push({
             id,
